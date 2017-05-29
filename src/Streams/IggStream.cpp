@@ -30,12 +30,6 @@ void IggStream::open(){
 	else if(store.compare("file") == 0){
 		ifstream fin;
 		fin.open(resource);
-/*		stringstream ss;
-		ss << fin.rdbuf();
-		fin.close();
-		streambuf *oldBuffer = rdbuf(ss.rdbuf(nullptr));
-		if(oldBuffer != nullptr)
-			delete oldBuffer;*/
 		streambuf *oldBuffer = rdbuf(new InFileBuffer(resource));
 		if(oldBuffer != nullptr)
 			delete oldBuffer;
