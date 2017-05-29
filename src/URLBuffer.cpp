@@ -10,19 +10,6 @@ namespace Ygg{
 
 URLBuffer::URLBuffer(const std::string& url){
 	this->url = url;
-	buffer.push_back('H');
-	buffer.push_back('e');
-	buffer.push_back('l');
-	buffer.push_back('l');
-	buffer.push_back('o');
-	buffer.push_back(' ');
-	buffer.push_back('w');
-	buffer.push_back('o');
-	buffer.push_back('r');
-	buffer.push_back('l');
-	buffer.push_back('d');
-	buffer.push_back('!');
-	buffer.push_back('\n');
 
 	CURL *easyHandle = curl_easy_init();
 	curl_easy_setopt(easyHandle, CURLOPT_URL, url.c_str());
