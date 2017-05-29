@@ -7,7 +7,7 @@ using namespace std;
 
 namespace Ygg{
 
-IggStream::IggStream(){
+IggStream::IggStream() : istream(nullptr){
 }
 
 IggStream::~IggStream(){
@@ -18,7 +18,9 @@ void IggStream::open(){
 	const string& resource = getResource();
 
 	if(store.compare("url") == 0){
-		delete rdbuf(new URLBuffer(resource));
+		streambuf *oldBuffer = rdbuf(new URLBuffer(resource));
+		if(oldBuffer != nullptr)
+			delete oldBuffer;
 	}
 	else{
 		cout << "Error in IggStream::open(): Unknwon store '" << store << "'.";

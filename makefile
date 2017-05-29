@@ -28,7 +28,7 @@
 CC:= g++
 
 # Compiler flags
-CFLAGS:= -std=c++11 -Wall -fopenmp -O3
+CFLAGS:= -std=c++11 -Wall -O3
 
 # Libraries (can also include path to these libraries as -L/SOME_PATH)
 LIB:= -lm
