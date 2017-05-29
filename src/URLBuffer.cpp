@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace Yggdrasil{
+namespace Ygg{
 
 URLBuffer::URLBuffer(const std::string& url){
 	this->url = url;
@@ -63,4 +63,4 @@ size_t URLBuffer::writeCallback(
 	return size*nmemb;
 }
 
-};	//End of namespace Yggdrasil
+};	//End of namespace Ygg

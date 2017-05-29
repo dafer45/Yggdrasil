@@ -3,7 +3,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace Yggdrasil;
+using namespace Ygg;
 
 int main(int argc, char **argv){
 	IggStream iggStream;

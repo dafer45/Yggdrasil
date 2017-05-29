@@ -5,7 +5,7 @@
 
 #include <istream>
 
-namespace Yggdrasil{
+namespace Ygg{
 
 /** Input stream. */
 class IggStream : public YggStream, public std::istream{
@@ -21,6 +21,6 @@ public:
 private:
 };
 
-};	//End of namespace Yggdrasil
+};	//End of namespace Ygg
 
 #endif

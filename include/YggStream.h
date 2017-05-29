@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <string>
 
-namespace Yggdrasil{
+namespace Ygg{
 
 /** Base class for IggStream (input) and OggStream (output). */
 class YggStream{
@@ -56,6 +56,6 @@ inline const std::string& YggStream::getResource() const{
 	return resource;
 }
 
-};	//End of namespace Yggdrasil
+};	//End of namespace Ygg
 
 #endif

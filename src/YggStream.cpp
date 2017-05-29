@@ -1,6 +1,6 @@
 #include "YggStream.h"
 
-namespace Yggdrasil{
+namespace Ygg{
 
 YggStream::YggStream(){
 }
@@ -8,4 +8,4 @@ YggStream::YggStream(){
 YggStream::~YggStream(){
 }
 
-};	//End of namespace Yggdrasil
+};	//End of namespace Ygg

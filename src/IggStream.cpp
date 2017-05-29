@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace Yggdrasil{
+namespace Ygg{
 
 IggStream::IggStream(){
 }
@@ -26,4 +26,4 @@ void IggStream::open(){
 	}
 }
 
-};	//End of namespace Yggdrasil
+};	//End of namespace Ygg

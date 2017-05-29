@@ -4,7 +4,7 @@
 #include <streambuf>
 #include <vector>
 
-namespace Yggdrasil{
+namespace Ygg{
 
 class URLBuffer : public std::streambuf{
 public:
@@ -29,6 +29,6 @@ private:
 	);
 };
 
-};	//End of namespace Yggdrasil
+};	//End of namespace Ygg
 
 #endif
