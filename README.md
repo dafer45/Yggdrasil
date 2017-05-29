@@ -1,2 +1,2 @@
 # Yggdrasil
-Distributed storage
+c++ stream interface for diverse and distributed resources.
