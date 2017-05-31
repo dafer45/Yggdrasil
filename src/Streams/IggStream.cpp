@@ -1,5 +1,6 @@
 #include "IggStream.h"
 #include "InFileBuffer.h"
+#include "InStringBuffer.h"
 #include "URLBuffer.h"
 
 #include <fstream>
@@ -31,6 +32,11 @@ void IggStream::open(){
 		ifstream fin;
 		fin.open(resource);
 		streambuf *oldBuffer = rdbuf(new InFileBuffer(resource));
+		if(oldBuffer != nullptr)
+			delete oldBuffer;
+	}
+	else if(store.compare("string") == 0){
+		streambuf *oldBuffer = rdbuf(new InStringBuffer(resource));
 		if(oldBuffer != nullptr)
 			delete oldBuffer;
 	}
