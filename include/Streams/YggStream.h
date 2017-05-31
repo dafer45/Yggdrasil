@@ -22,38 +22,47 @@ public:
 	void setResource(const std::string& resource);
 protected:
 	/** Get store. */
-	const std::string& getStore() const;
+	const std::string getStore() const;
 
 	/** Get resource. */
-	const std::string& getResource() const;
+	const std::string getResource() const;
 private:
 	/** Store. */
 	std::string store;
 
 	/** Resource. */
 	std::string resource;
+
+	/** Convert string to lower case. */
+	std::string toLowerCase(const std::string& str) const;
 };
 
 inline void YggStream::setStore(const std::string& store){
 	this->store = store;
-	std::transform(
-		store.begin(),
-		store.end(),
-		this->store.begin(),
-		::tolower
-	);
 }
 
 inline void YggStream::setResource(const std::string& resource){
 	this->resource = resource;
 }
 
-inline const std::string& YggStream::getStore() const{
+/*inline const std::string& YggStream::getStore() const{
 	return store;
 }
 
 inline const std::string& YggStream::getResource() const{
 	return resource;
+}*/
+
+inline std::string YggStream::toLowerCase(const std::string& str) const{
+	std::string result = str;
+	std::transform(
+		str.begin(),
+		str.end(),
+		result.begin(),
+		::tolower
+	);
+
+	return result;
 }
 
 };	//End of namespace Ygg

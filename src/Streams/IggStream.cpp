@@ -41,7 +41,7 @@ void IggStream::open(){
 			delete oldBuffer;
 	}
 	else{
-		cout << "Error in IggStream::open(): Unknwon store '" << store << "'.";
+		cout << "Error in IggStream::open(): Unknwon store '" << store << "'.\n";
 		exit(1);
 	}
 }

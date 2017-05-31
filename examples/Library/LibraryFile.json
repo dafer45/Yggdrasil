@@ -1,0 +1,6 @@
+{
+	"Example file 1" : {
+		store : "File"
+		resource : "makefile"
+	}
+}
