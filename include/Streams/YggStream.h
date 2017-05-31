@@ -26,6 +26,9 @@ protected:
 
 	/** Get resource. */
 	const std::string getResource() const;
+
+	/** Find resource. */
+	void locateResource();
 private:
 	/** Store. */
 	std::string store;

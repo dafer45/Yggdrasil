@@ -8,7 +8,7 @@ using namespace Ygg;
 int main(int argc, char **argv){
 	IggStream iggStream;
 	iggStream.setStore("File<LibraryFile.json>");
-	iggStream.setResource("Example file 1");
+	iggStream.setResource("LibraryLinkedFile");
 	iggStream.open();
 
 	while(!iggStream.eof()){

@@ -1,6 +1,5 @@
 {
-	"Example file 1" : {
-		store : "File"
-		resource : "makefile"
+	"LibraryLinkedFile" : {
+		"store" : "File<LibraryFile2.json>"
 	}
 }

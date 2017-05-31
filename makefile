@@ -45,6 +45,7 @@ STATIC_LIB = build/libYggdrasil.a
 # Root directories for .h files
 INC_DIR = include/Streams/
 INC_DIR += include/Buffers/
+INC_DIR += json/
 
 # Main source directory
 SRC_DIR = src/Streams/
@@ -57,7 +58,7 @@ OBJ_DIR:= build
 #---------------------No need to change the following!-------------------
 
 # Include files are needed fot Includes
-INC_FILES :=  $(wildcard $(INC_DIR)/*.h))
+INC_FILES :=  $(wildcard $(INC_DIR)/*.h $(INC_DIR)/*.hpp))
 
 # All include directories are needed for Includes
 INC_DIRS:= $(dir $(INC_FILES))

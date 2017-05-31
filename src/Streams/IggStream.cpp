@@ -20,6 +20,8 @@ IggStream::~IggStream(){
 }
 
 void IggStream::open(){
+	locateResource();
+
 	const string& store = getStore();
 	const string& resource = getResource();
 
