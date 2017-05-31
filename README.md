@@ -1,7 +1,7 @@
 # Yggdrasil
 c++ stream interface for diverse and distributed resources.
 
-#License
+#License  
 Yggdrasil is free to use under the Appache 2.0 license (see the file 'License').
 
 ### Third party licenses
