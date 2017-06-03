@@ -1,3 +1,4 @@
+#include "Exception.h"
 #include "IggStream.h"
 
 #include <iostream>

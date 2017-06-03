@@ -3,6 +3,7 @@
 
 #include "YggStream.h"
 
+#include <string>
 #include <istream>
 
 namespace Ygg{
@@ -18,8 +19,24 @@ public:
 
 	/** Open. */
 	void open();
+
+	/***/
+	void setHashType(HashType hashType);
+
+	/** Set hash. */
+	void setHash(const std::string& hash);
 private:
+	/** Verify SHA1 hash. */
+	bool verifyHashSHA1();
 };
+
+inline void IggStream::setHashType(HashType hashType){
+	YggStream::setHashType(hashType);
+}
+
+inline void IggStream::setHash(const std::string& hash){
+	YggStream::setHash(hash);
+}
 
 };	//End of namespace Ygg
 

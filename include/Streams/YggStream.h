@@ -9,6 +9,9 @@ namespace Ygg{
 /** Base class for IggStream (input) and OggStream (output). */
 class YggStream{
 public:
+	/** Enum class for specifying hash type. */
+	enum class HashType {None, SHA1};
+
 	/** Constructor. */
 	YggStream();
 
@@ -29,12 +32,36 @@ protected:
 
 	/** Find resource. */
 	void locateResource();
+
+	/** Set hash type. */
+	void setHashType(HashType hashType);
+
+	/** Get hash type. */
+	HashType getHashType() const;
+
+	/** Set hash. */
+	void setHash(const std::string& hash);
+
+	/** Get hash. */
+	const std::string& getHash() const;
+
+	/** Set public key. */
+	void setPublicKey();
 private:
 	/** Store. */
 	std::string store;
 
 	/** Resource. */
 	std::string resource;
+
+	/** Hash type. */
+	HashType hashType;
+
+	/** Hash of the string content. */
+	std::string hash;
+
+	/** Public key. */
+	std::string publicKey;
 
 	/** Convert string to lower case. */
 	std::string toLowerCase(const std::string& str) const;
@@ -48,13 +75,21 @@ inline void YggStream::setResource(const std::string& resource){
 	this->resource = resource;
 }
 
-/*inline const std::string& YggStream::getStore() const{
-	return store;
+inline void YggStream::setHashType(const HashType hashType){
+	this->hashType = hashType;
 }
 
-inline const std::string& YggStream::getResource() const{
-	return resource;
-}*/
+inline YggStream::HashType YggStream::getHashType() const{
+	return hashType;
+}
+
+inline void YggStream::setHash(const std::string& hash){
+	this->hash = hash;
+}
+
+inline const std::string& YggStream::getHash() const{
+	return hash;
+}
 
 inline std::string YggStream::toLowerCase(const std::string& str) const{
 	std::string result = str;

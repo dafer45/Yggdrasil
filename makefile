@@ -45,11 +45,14 @@ STATIC_LIB = build/libYggdrasil.a
 # Root directories for .h files
 INC_DIR = include/Streams/
 INC_DIR += include/Buffers/
+INC_DIR += include/Exceptions/
+INC_DIR += include/Utilities/
 INC_DIR += json/
 
 # Main source directory
 SRC_DIR = src/Streams/
 SRC_DIR += src/Buffers/
+SRC_DIR += src/Exceptions/
 
 # Directory for Objects
 OBJ_DIR:= build

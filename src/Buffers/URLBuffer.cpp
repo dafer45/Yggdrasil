@@ -1,4 +1,6 @@
+#include "ReadException.h"
 #include "URLBuffer.h"
+#include "YGGMacros.h"
 
 #include <iostream>
 
@@ -21,13 +23,19 @@ URLBuffer::URLBuffer(const std::string& url){
 	case CURLE_OK:
 		break;
 	case CURLE_FILE_COULDNT_READ_FILE:
-		cout << "Error in Resource::read()";
-		cout << "Unable to open file.",
-		exit(1);
+		throw ReadException(
+			"URLBuffer::URLBuffer()",
+			YGGWhere,
+			"Unable to open file.",
+			""
+		);
         default:
-		cout << "Error in Resource::read()\n";
-		cout << "Failed to read with CURL error code " << curlCode << ".";
-		exit(1);
+		throw ReadException(
+			"URLBuffer::URLBuffer()",
+			YGGWhere,
+			"Failed to read with CURL error code " + to_string(curlCode) + ".",
+			""
+		);
 	}
 
 	char *start = &buffer.front();

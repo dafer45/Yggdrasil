@@ -1,4 +1,6 @@
 #include "IggStream.h"
+#include "ReadException.h"
+#include "YGGMacros.h"
 #include "YggStream.h"
 
 #include <iostream>
@@ -11,6 +13,7 @@ using namespace nlohmann;
 namespace Ygg{
 
 YggStream::YggStream(){
+	hashType = HashType::None;
 }
 
 YggStream::~YggStream(){
@@ -38,7 +41,12 @@ void YggStream::locateResource(){
 		IggStream iggStream;
 		iggStream.setStore(libraryStore);
 		iggStream.setResource(libraryResource);
+		iggStream.setHashType(hashType);
+		iggStream.setHash(hash);
 		iggStream.open();
+
+		hashType = HashType::None;
+		hash = "";
 
 		string library(istream_iterator<char>(iggStream), {});
 		try{
@@ -51,6 +59,26 @@ void YggStream::locateResource(){
 			catch(json::exception e){
 				//It is OK to not have a resource name.
 			}
+			try{
+				string hashTypeString = libraryEntry.at("hashType");
+				if(toLowerCase(hashTypeString).compare("sha1") == 0){
+					hashType = HashType::SHA1;
+				}
+				else{
+					throw ReadException(
+						"YggStream::locateResource()",
+						YGGWhere,
+						string("Unknown hash type: ") + hashTypeString,
+						""
+					);
+				}
+			}
+			catch(json::exception e){
+				//It is OK to not have a hashType.
+			}
+
+			if(hashType != HashType::None)
+				hash = libraryEntry.at("hash");
 		}
 		catch(json::exception e){
 			cout << "Error in YggStream::getStore(): " << e.what() << "\n";
