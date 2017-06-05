@@ -1,11 +1,16 @@
 #include "IggStream.h"
 #include "ReadException.h"
+#include "RSA.h"
 #include "YGGMacros.h"
 #include "YggStream.h"
 
 #include <iostream>
 
 #include "json.hpp"
+
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 
 using namespace std;
 using namespace nlohmann;
@@ -51,7 +56,10 @@ void YggStream::locateResource(){
 		string library(istream_iterator<char>(iggStream), {});
 		try{
 			json j = json::parse(library);
-			json libraryEntry = j.at(resource);
+			json content = j.at("content");
+			if(publicKey.compare("") != 0)
+				verifySignature(j.at("signature"), content);
+			json libraryEntry = content.at(resource);
 			store = libraryEntry.at("store");
 			try{
 				resource = libraryEntry.at("resource");
@@ -89,6 +97,75 @@ void YggStream::locateResource(){
 
 const string YggStream::getResource() const{
 	return resource;
+}
+
+void YggStream::verifySignature(const json& signature, const json& content){
+	string s = signature.dump();
+	string c = content.dump();
+
+	//<temp>
+	RSA rsa;
+	cout << "Binary:\t" << c << "\n";
+	cout << "Base64:\t" << rsa.encode64(c) << "\n";
+	cout << "Decoded:\t" << rsa.decode64(rsa.encode64(c));
+	//<!temp>
+
+	s.erase(0, 1);
+	s.erase(s.size()-1, 1);
+	size_t pos;
+	while((pos = s.find("\\n")) != string::npos){
+		s.erase(pos, 1);
+		s.replace(pos, 1, "\n");
+	}
+
+	cout << "Signature:\n" << s << "\n";
+	cout << "Content:\n" << c << "\n";
+	cout << "Public key:\n" << publicKey << "\n";
+
+	EVP_MD_CTX *mdctx = EVP_MD_CTX_create();
+	if(!mdctx){
+		throw ReadException(
+			"YggStream::verifySiganture()",
+			YGGWhere,
+			"Unable to create message digest context.",
+			""
+		);
+	}
+
+	EVP_PKEY* evp_pkey = EVP_PKEY_new();
+	BIO* bio = BIO_new_mem_buf(publicKey.c_str(), publicKey.size());
+	PEM_read_bio_PUBKEY(bio, &evp_pkey, nullptr, nullptr);
+
+	if(1 != EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha1(), nullptr, evp_pkey)){
+		ERR_print_errors_fp(stderr);
+		throw ReadException(
+			"YggStream::verifySiganture()",
+			YGGWhere,
+			"Unable to initialize digest verify.",
+			""
+		);
+	}
+
+	if(1 != EVP_DigestVerifyUpdate(mdctx, c.c_str(), c.size())){
+		throw ReadException(
+			"YggStream::verifySiganture()",
+			YGGWhere,
+			"Unable to perform digest verification update.",
+			""
+		);
+	}
+
+	if(1 != EVP_DigestVerifyFinal(mdctx, (unsigned char*)s.c_str(), s.size()+1)){
+		ERR_print_errors_fp(stderr);
+		throw ReadException(
+			"YggStream::verifySiganture()",
+			YGGWhere,
+			"Signature not verified.",
+			""
+		);
+	}
+
+	EVP_PKEY_free(evp_pkey);
 }
 
 };	//End of namespace Ygg

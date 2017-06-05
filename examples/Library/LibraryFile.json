@@ -1,7 +1,7 @@
 {
-	"LibraryLinkedFile" : {
-		"store" : "File<LibraryFile2.json>",
-		"hashType" : "sha1",
-		"hash" : "58f0622173524f251ff7ec459e27bd9d81d2d92e"
+	"content" : {
+		"LibraryLinkedFile" : {
+			"store" : "File<LibraryFile2.json>"
+		}
 	}
 }

@@ -20,11 +20,14 @@ public:
 	/** Open. */
 	void open();
 
-	/***/
+	/** Set hash type. */
 	void setHashType(HashType hashType);
 
 	/** Set hash. */
 	void setHash(const std::string& hash);
+
+	/** Set public key. */
+	void setPublicKey(const std::string& publicKey);
 private:
 	/** Verify SHA1 hash. */
 	bool verifyHashSHA1();
@@ -36,6 +39,10 @@ inline void IggStream::setHashType(HashType hashType){
 
 inline void IggStream::setHash(const std::string& hash){
 	YggStream::setHash(hash);
+}
+
+inline void IggStream::setPublicKey(const std::string& publicKey){
+	YggStream::setPublicKey(publicKey);
 }
 
 };	//End of namespace Ygg

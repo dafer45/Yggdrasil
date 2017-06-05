@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <string>
 
+#include "json.hpp"
+
 namespace Ygg{
 
 /** Base class for IggStream (input) and OggStream (output). */
@@ -46,7 +48,10 @@ protected:
 	const std::string& getHash() const;
 
 	/** Set public key. */
-	void setPublicKey();
+	void setPublicKey(const std::string& publicKey);
+
+	/** Get public key. */
+	const std::string& getPublicKey() const;
 private:
 	/** Store. */
 	std::string store;
@@ -65,6 +70,12 @@ private:
 
 	/** Convert string to lower case. */
 	std::string toLowerCase(const std::string& str) const;
+
+	/** Verify signature. */
+	void verifySignature(
+		const nlohmann::json& signature,
+		const nlohmann::json& content
+	);
 };
 
 inline void YggStream::setStore(const std::string& store){
@@ -89,6 +100,14 @@ inline void YggStream::setHash(const std::string& hash){
 
 inline const std::string& YggStream::getHash() const{
 	return hash;
+}
+
+inline void YggStream::setPublicKey(const std::string& publicKey){
+	this->publicKey = publicKey;
+}
+
+inline const std::string& YggStream::getPublicKey() const{
+	return publicKey;
 }
 
 inline std::string YggStream::toLowerCase(const std::string& str) const{

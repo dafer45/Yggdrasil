@@ -11,8 +11,6 @@ int main(int argc, char **argv){
 		IggStream iggStream;
 		iggStream.setStore("File<LibraryFile.json>");
 		iggStream.setResource("LibraryLinkedFile");
-		iggStream.setHashType(YggStream::HashType::SHA1);
-		iggStream.setHash("f2b25e902fb699de9ce0043e2f4af4290a2aead4");
 		iggStream.open();
 
 		while(!iggStream.eof()){
