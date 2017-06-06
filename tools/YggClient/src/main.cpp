@@ -18,25 +18,25 @@ using namespace std;
 using namespace nlohmann;
 using namespace Ygg;
 
-void addLibraryEntry(
-	const string& libraryFilename,
-	const LibraryEntry& libraryEntry
-);
-void addPublicKey(
-	const string& libraryFilename,
-	const string& publicKeyFilename
-);
+void addLibraryEntry(const LibraryEntry& libraryEntry);
+void addPublicKey(const string& publicKeyFilename);
+string argumentToKey(const string& argument);
+string argumentToStore(const string& argument);
+string argumentToResource(const string& argument);
 void configure(const Configuration& configuration);
 void createLibrary(const string& filename);
+void ensureConfigurationFileExists();
+Configuration getConfiguration();
 string getKey(const string& filename);
-void list(const string& libraryFilename);
+void list();
 void printUsageInfo();
 json readJSON(const string& filename);
-json readLibrary(const string& filename);
-void sign(const string& libraryFilename, const string& privateKey);
-void verify(const string& libraryFilename, const string& publicKey);
+json readLibrary();
+void sign(const string& privateKey);
+void verify(const string& publicKey);
+void writeConfiguration(const Configuration& configuration);
 void writeJSON(const string& filename, const json& j);
-void writeLibrary(const string& filename, const json& j);
+void writeLibrary(const json& j);
 
 int main(int argc, char **argv){
 	if(argc < 2)
@@ -44,8 +44,13 @@ int main(int argc, char **argv){
 
 	string command = argv[1];
 
-//	string libraryFilename = "Library.json";
-	string libraryFilename = "";
+	string argument;
+	if(argc > 2){
+		argument = argv[2];
+		if(argument.substr(0, 2).compare("--") == 0)
+			argument = "";
+	}
+
 	string privateKeyFilename = "";
 	string publicKeyFilename = "";
 
@@ -61,7 +66,6 @@ int main(int argc, char **argv){
 			//Does not set flags.
 			{"current-library",	required_argument,	0,	'c'},
 			{"key",			required_argument,	0,	'k'},
-			{"library",		required_argument,	0,	'l'},
 			{"private-key",		required_argument,	0,	'P'},
 			{"public-key",		required_argument,	0,	'p'},
 			{"resource",		required_argument,	0,	'r'},
@@ -70,7 +74,7 @@ int main(int argc, char **argv){
 		};
 
 		int optionIndex = 0;
-		int c = getopt_long(argc, argv, "c:k:l:P:p:r:s:", longOptions, &optionIndex);
+		int c = getopt_long(argc, argv, "c:k:P:p:r:s:", longOptions, &optionIndex);
 		if(c == -1)
 			break;
 
@@ -88,9 +92,6 @@ int main(int argc, char **argv){
 			break;
 		case 'k':
 			key = optarg;
-			break;
-		case 'l':
-			libraryFilename = optarg;
 			break;
 		case 'P':
 			privateKeyFilename = optarg;
@@ -110,32 +111,61 @@ int main(int argc, char **argv){
 		}
 	}
 
-	if(command.compare("create") == 0){
-		createLibrary(libraryFilename);
+	if(command.compare("add") == 0){
+		LibraryEntry libraryEntry;
+		if(argument.size() != 0){
+			libraryEntry.setKey(argumentToKey(argument));
+			libraryEntry.setStore(argumentToStore(argument));
+			libraryEntry.setResource(argumentToResource(argument));
+		}
+
+		if(key.size() != 0)
+			libraryEntry.setKey(key);
+		if(store.size() != 0)
+			libraryEntry.setStore(store);
+		if(resource.size() != 0)
+			libraryEntry.setResource(resource);
+		addLibraryEntry(libraryEntry);
+	}
+	else if(command.compare("add-public-key") == 0){
+		addPublicKey(publicKeyFilename);
 	}
 	else if(command.compare("config") == 0){
 		Configuration configuration;
 		configuration.setCurrentLibrary(currentLibrary);
 		configure(configuration);
 	}
-	else if(command.compare("add-public-key") == 0){
-		addPublicKey(libraryFilename, publicKeyFilename);
+	else if(command.compare("create") == 0){
+		createLibrary(argument);
 	}
-	else if(command.compare("add") == 0){
-		LibraryEntry libraryEntry;
-		libraryEntry.setKey(key);
-		libraryEntry.setStore(store);
-		libraryEntry.setResource(resource);
-		addLibraryEntry(libraryFilename, libraryEntry);
+	else if(command.compare("info") == 0){
+		Configuration configuration = getConfiguration();
+		configuration.print();
 	}
 	else if(command.compare("ls") == 0){
-		list(libraryFilename);
+		list();
+	}
+	else if(command.compare("release-library") == 0){
+		Configuration configuration = getConfiguration();
+		configuration.setCurrentLibrary("");
+		writeConfiguration(configuration);
+	}
+	else if(command.compare("set-library") == 0){
+		Configuration configuration;
+		if(argument.size() != 0){
+			configuration.setCurrentLibrary(argument);
+			configure(configuration);
+		}
+		else{
+			cout << "set-library require one argument.\n";
+			exit(1);
+		}
 	}
 	else if(command.compare("sign") == 0){
-		sign(libraryFilename, privateKeyFilename);
+		sign(privateKeyFilename);
 	}
 	else if(command.compare("verify") == 0){
-		verify(libraryFilename, publicKeyFilename);
+		verify(publicKeyFilename);
 	}
 	else{
 		printUsageInfo();
@@ -145,29 +175,27 @@ int main(int argc, char **argv){
 }
 
 void addLibraryEntry(
-	const string& libraryFilename,
 	const LibraryEntry& libraryEntry
 ){
-	json library = readLibrary(libraryFilename);
+	json library = readLibrary();
 	try{
 		library.at("content")[libraryEntry.getKey()] = libraryEntry.getJSONValue();
 	}
 	catch(...){
 		cout << "Unable to add library entry.\n";
 	}
-	writeLibrary(libraryFilename, library);
+	writeLibrary(library);
 }
 
 void addPublicKey(
-	const string& libraryFilename,
 	const string& publicKeyFilename
 ){
 	string publicKey = getKey(publicKeyFilename);
 
-	json library = readLibrary(libraryFilename);
+	json library = readLibrary();
 	try{
 		library["publicKey"] = publicKey;
-		writeLibrary(libraryFilename, library);
+		writeLibrary(library);
 	}
 	catch(json::exception e){
 		cout << "Unable to parse json file.\n";
@@ -175,7 +203,84 @@ void addPublicKey(
 	}
 }
 
+string argumentToKey(const string& argument){
+	size_t pos = argument.find("://");
+	if(pos != string::npos)
+		return argument.substr(pos + 3, argument.size() - pos - 3);
+
+	return argument;
+}
+
+string argumentToStore(const string& argument){
+	size_t pos = argument.find("://");
+	if(pos != string::npos)
+		return "URL";
+
+	return "File";
+}
+
+string argumentToResource(const string& argument){
+	size_t pos = argument.find("://");
+	if(pos != string::npos)
+		return argument;
+
+	string currentWorkingDirectory = getenv("PWD");
+	return currentWorkingDirectory + "/" + argument;
+}
+
 void configure(const Configuration& configuration){
+	Configuration c = getConfiguration();
+	string currentLibrary = configuration.getCurrentLibrary();
+	if(currentLibrary.compare("") != 0){
+		string filename;
+
+		size_t pos = currentLibrary.find("global:");
+		if(pos == 0){
+			filename = string(getenv("HOME")) + "/.ygg/"
+				+ currentLibrary.substr(
+					7,
+					currentLibrary.size()-7
+				)
+				+ "/Library.json";
+		}
+		else{
+			filename = string(getenv("PWD")) + "/"
+				+ currentLibrary;
+		}
+
+		ifstream fin(filename);
+		if(!fin){
+			cout << "Library does not exist.\n";
+			exit(1);
+		}
+		c.setCurrentLibrary(filename);
+	}
+
+	writeConfiguration(c);
+}
+
+void createLibrary(const string& filename){
+	string f = filename;
+	if(f.compare("") == 0)
+		f = "Library.json";
+
+	size_t pos = filename.find("global:");
+	if(pos == 0){
+		string homeDir = getenv("HOME");
+		string libDir = homeDir + "/.ygg/" + filename.substr(7, filename.size()-7) + "/";
+		f = libDir + "Library.json";
+		system(("mkdir " + libDir).c_str());
+	}
+	ofstream fout(f);
+	if(!fout){
+		cout << "Unable to open file '" << filename << "'.";
+		exit(1);
+	}
+	fout << "{\"content\":{}}";
+	fout.close();
+}
+
+void ensureConfigurationFileExists(){
 	string homeDir = getenv("HOME");
 	string filename = homeDir + "/.ygg/config";
 	ifstream fin(filename);
@@ -191,47 +296,18 @@ void configure(const Configuration& configuration){
 	else{
 		fin.close();
 	}
-
-	try{
-		json config = readJSON(filename);
-		Configuration c(config);
-
-		if(configuration.getCurrentLibrary().compare("") != 0){
-			ifstream fin(homeDir + "/.ygg/" + configuration.getCurrentLibrary() + "/Library.json");
-			if(!fin){
-				cout << "Library does not exist.\n";
-				exit(1);
-			}
-			c.setCurrentLibrary(configuration.getCurrentLibrary());
-		}
-
-		writeJSON(filename, c.getJSON());
-	}
-	catch(...){
-		cout << "Unable to update configuration file.\n";
-	}
 }
 
-void createLibrary(const string& filename){
-	string f = filename;
-	if(f.compare("") == 0)
-		f = "Library.json";
-
-	size_t pos = filename.find("global:");
-	if(pos == 0){
+Configuration getConfiguration(){
+	ensureConfigurationFileExists();
+	try{
 		string homeDir = getenv("HOME");
-		string libDir = homeDir + "/.ygg/" + filename.substr(7, filename.size()-7) + "/";
-		f = libDir + "Library.json";
-//		cout << f << "\n";
-		system(("mkdir " + libDir).c_str());
+		string filename = homeDir + "/.ygg/config";
+		return Configuration(readJSON(filename));
 	}
-	ofstream fout(f);
-	if(!fout){
-		cout << "Unable to open file '" << filename << "'.";
-		exit(1);
+	catch(...){
+		cout << "Unable to open global library file.\n";
 	}
-	fout << "{\"content\":{}}";
-	fout.close();
 }
 
 string getKey(const string& filename){
@@ -271,9 +347,8 @@ string getKey(const string& filename){
 	return key;
 }
 
-void list(const string& libraryFilename){
-	json library = readLibrary(libraryFilename);
-//	cout << library.dump(4) << "\n";
+void list(){
+	json library = readLibrary();
 	try{
 		json content = library.at("content");
 		cout << left;
@@ -307,7 +382,10 @@ void printUsageInfo(){
 	cout << setw(INDENT) << "" << setw(20) << "add-public-key"	<< "Add public key.\n";
 	cout << setw(INDENT) << "" << setw(20) << "config"		<< "Configure global settings.\n";
 	cout << setw(INDENT) << "" << setw(20) << "create"		<< "Create library file.\n";
+	cout << setw(INDENT) << "" << setw(20) << "info"		<< "Create configuration information.\n";
 	cout << setw(INDENT) << "" << setw(20) << "ls"			<< "Display content.\n";
+	cout << setw(INDENT) << "" << setw(20) << "release-library"	<< "Release the current library.\n";
+	cout << setw(INDENT) << "" << setw(20) << "set-library"		<< "Set the current library.\n";
 	cout << setw(INDENT) << "" << setw(20) << "sign"		<< "Sign file with private key.\n";
 	cout << setw(INDENT) << "" << setw(20) << "verify"		<< "Verify file with public key.\n";
 	cout << "\n";
@@ -340,37 +418,42 @@ json readJSON(const std::string& filename){
 	}
 }
 
-json readLibrary(const std::string& filename){
-	if(filename.compare("") != 0)
-		return readJSON(filename);
-
-	ifstream fin("Library.json");
-	if(fin){
-		fin.close();
-		return readJSON("Library.json");
-	}
-
+json readLibrary(){
 	try{
-		string homeDir = getenv("HOME");
-		string filename = homeDir + "/.ygg/config";
-		Configuration configuration(readJSON(filename));
+		Configuration configuration = getConfiguration();
+
 		string currentLibrary = configuration.getCurrentLibrary();
-		return readJSON(homeDir + "/.ygg/" + currentLibrary + "/Library.json");
+		if(currentLibrary.size() != 0)
+			return readJSON(currentLibrary);
 	}
 	catch(...){
 		cout << "Unable to open global library file.\n";
 	}
+
+	string currentDir = getenv("PWD") + string("/");
+	while(currentDir.size() > 0){
+		string f = currentDir + "Library.json";
+		ifstream fin(f);
+		if(fin){
+			fin.close();
+			return readJSON(f);
+		}
+		currentDir.erase(currentDir.size()-1, 1);
+		size_t pos = currentDir.find_last_of("/");
+		currentDir = currentDir.substr(0, pos+1);
+	}
+
 }
 
-void sign(const string& libraryFilename, const string& privateKeyFilename){
-	json library = readLibrary(libraryFilename);
+void sign(const string& privateKeyFilename){
+	json library = readLibrary();
 	try{
 		json content = library.at("content");
 		RSA rsa;
 		rsa.setPrivateKey(getKey(privateKeyFilename));
 		string signature = rsa.getSignature(content.dump());
 		library["signature"] = rsa.encode64(signature);
-		writeLibrary(libraryFilename, library);
+		writeLibrary(library);
 	}
 	catch(...){
 		cout << "Unable to sign file.\n";
@@ -378,8 +461,8 @@ void sign(const string& libraryFilename, const string& privateKeyFilename){
 	}
 }
 
-void verify(const string& libraryFilename, const string& publicKeyFilename){
-	json library = readLibrary(libraryFilename);
+void verify(const string& publicKeyFilename){
+	json library = readLibrary();
 	try{
 		RSA rsa;
 		string content = library.at("content").dump();
@@ -408,6 +491,17 @@ void verify(const string& libraryFilename, const string& publicKeyFilename){
 	}
 }
 
+void writeConfiguration(const Configuration& configuration){
+	try{
+		string homeDir = getenv("HOME");
+		string filename = homeDir + "/.ygg/config";
+		return writeJSON(filename, configuration.getJSON());
+	}
+	catch(...){
+		cout << "Unable to write global library file.\n";
+	}
+}
+
 void writeJSON(const string& filename, const json& j){
 	ofstream fout(filename);
 	if(!fout){
@@ -419,24 +513,23 @@ void writeJSON(const string& filename, const json& j){
 	fout.close();
 }
 
-void writeLibrary(const std::string& filename, const json& j){
-	if(filename.compare("") != 0)
-		return writeJSON(filename, j);
+void writeLibrary(const json& j){
+	try{
+		Configuration configuration = getConfiguration();
+
+		string currentLibrary = configuration.getCurrentLibrary();
+		if(currentLibrary.size() != 0){
+			writeJSON(currentLibrary, j);
+			return;
+		}
+	}
+	catch(...){
+		cout << "Unable to open global library file.\n";
+	}
 
 	ifstream fin("Library.json");
 	if(fin){
 		fin.close();
 		return writeJSON("Library.json", j);
-	}
-
-	try{
-		string homeDir = getenv("HOME");
-		string filename = homeDir + "/.ygg/config";
-		Configuration configuration(readJSON(filename));
-		string currentLibrary = configuration.getCurrentLibrary();
-		writeJSON(homeDir + "/.ygg/" + currentLibrary + "/Library.json", j);
-	}
-	catch(...){
-		cout << "Unable to open global library file.\n";
 	}
 }
