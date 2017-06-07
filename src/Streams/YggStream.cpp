@@ -103,13 +103,7 @@ void YggStream::verifySignature(const json& signature, const json& content){
 	string s = signature.dump();
 	string c = content.dump();
 
-	//<temp>
 	RSA rsa;
-	cout << "Binary:\t" << c << "\n";
-	cout << "Base64:\t" << rsa.encode64(c) << "\n";
-	cout << "Decoded:\t" << rsa.decode64(rsa.encode64(c));
-	//<!temp>
-
 	s.erase(0, 1);
 	s.erase(s.size()-1, 1);
 	size_t pos;
@@ -117,55 +111,16 @@ void YggStream::verifySignature(const json& signature, const json& content){
 		s.erase(pos, 1);
 		s.replace(pos, 1, "\n");
 	}
-
-	cout << "Signature:\n" << s << "\n";
-	cout << "Content:\n" << c << "\n";
-	cout << "Public key:\n" << publicKey << "\n";
-
-	EVP_MD_CTX *mdctx = EVP_MD_CTX_create();
-	if(!mdctx){
+	s = rsa.decode64(s);
+	rsa.setPublicKey(publicKey);
+	if(!rsa.verifySignature(s, c)){
 		throw ReadException(
-			"YggStream::verifySiganture()",
+			"YggStream::locateResource()",
 			YGGWhere,
-			"Unable to create message digest context.",
+			"Invalid signautre.",
 			""
 		);
 	}
-
-	EVP_PKEY* evp_pkey = EVP_PKEY_new();
-	BIO* bio = BIO_new_mem_buf(publicKey.c_str(), publicKey.size());
-	PEM_read_bio_PUBKEY(bio, &evp_pkey, nullptr, nullptr);
-
-	if(1 != EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha1(), nullptr, evp_pkey)){
-		ERR_print_errors_fp(stderr);
-		throw ReadException(
-			"YggStream::verifySiganture()",
-			YGGWhere,
-			"Unable to initialize digest verify.",
-			""
-		);
-	}
-
-	if(1 != EVP_DigestVerifyUpdate(mdctx, c.c_str(), c.size())){
-		throw ReadException(
-			"YggStream::verifySiganture()",
-			YGGWhere,
-			"Unable to perform digest verification update.",
-			""
-		);
-	}
-
-	if(1 != EVP_DigestVerifyFinal(mdctx, (unsigned char*)s.c_str(), s.size()+1)){
-		ERR_print_errors_fp(stderr);
-		throw ReadException(
-			"YggStream::verifySiganture()",
-			YGGWhere,
-			"Signature not verified.",
-			""
-		);
-	}
-
-	EVP_PKEY_free(evp_pkey);
 }
 
 };	//End of namespace Ygg

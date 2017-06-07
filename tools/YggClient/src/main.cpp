@@ -32,7 +32,9 @@ void list();
 void printUsageInfo();
 json readJSON(const string& filename);
 json readLibrary();
+void removeLibraryEntry(const LibraryEntry& libraryEntry);
 void sign(const string& privateKey);
+void updateLibraryEntry(const LibraryEntry& libraryEntry);
 void verify(const string& publicKey);
 void writeConfiguration(const Configuration& configuration);
 void writeJSON(const string& filename, const json& j);
@@ -54,7 +56,7 @@ int main(int argc, char **argv){
 	string privateKeyFilename = "";
 	string publicKeyFilename = "";
 
-	string currentLibrary = "";
+//	string currentLibrary = "";
 
 	string key;
 	string store;
@@ -64,7 +66,6 @@ int main(int argc, char **argv){
 		static struct option longOptions[] = {
 			//Sets flags.
 			//Does not set flags.
-			{"current-library",	required_argument,	0,	'c'},
 			{"key",			required_argument,	0,	'k'},
 			{"private-key",		required_argument,	0,	'P'},
 			{"public-key",		required_argument,	0,	'p'},
@@ -74,7 +75,7 @@ int main(int argc, char **argv){
 		};
 
 		int optionIndex = 0;
-		int c = getopt_long(argc, argv, "c:k:P:p:r:s:", longOptions, &optionIndex);
+		int c = getopt_long(argc, argv, "k:P:p:r:s:", longOptions, &optionIndex);
 		if(c == -1)
 			break;
 
@@ -86,9 +87,6 @@ int main(int argc, char **argv){
 			if(optarg)
 				cerr << " with argument " << optarg;
 			cerr << "\n";
-			break;
-		case 'c':
-			currentLibrary = optarg;
 			break;
 		case 'k':
 			key = optarg;
@@ -130,11 +128,6 @@ int main(int argc, char **argv){
 	else if(command.compare("add-public-key") == 0){
 		addPublicKey(publicKeyFilename);
 	}
-	else if(command.compare("config") == 0){
-		Configuration configuration;
-		configuration.setCurrentLibrary(currentLibrary);
-		configure(configuration);
-	}
 	else if(command.compare("create") == 0){
 		createLibrary(argument);
 	}
@@ -150,6 +143,17 @@ int main(int argc, char **argv){
 		configuration.setCurrentLibrary("");
 		writeConfiguration(configuration);
 	}
+	else if(command.compare("remove") == 0){
+		LibraryEntry libraryEntry;
+		if(argument.size() != 0){
+			libraryEntry.setKey(argument);
+		}
+		else{
+			cout << "remove requires one argument.\n";
+			exit(1);
+		}
+		removeLibraryEntry(libraryEntry);
+	}
 	else if(command.compare("set-library") == 0){
 		Configuration configuration;
 		if(argument.size() != 0){
@@ -157,12 +161,27 @@ int main(int argc, char **argv){
 			configure(configuration);
 		}
 		else{
-			cout << "set-library require one argument.\n";
+			cout << "set-library requires one argument.\n";
 			exit(1);
 		}
 	}
 	else if(command.compare("sign") == 0){
 		sign(privateKeyFilename);
+	}
+	else if(command.compare("update") == 0){
+		LibraryEntry libraryEntry;
+		if(argument.compare("") != 0){
+			libraryEntry.setKey(argument);
+		}
+		else{
+			cout << "update requires one argument.\n";
+			exit(1);
+		}
+		if(store.size() != 0)
+			libraryEntry.setStore(store);
+		if(resource.size() != 0)
+			libraryEntry.setResource(resource);
+		updateLibraryEntry(libraryEntry);
 	}
 	else if(command.compare("verify") == 0){
 		verify(publicKeyFilename);
@@ -380,7 +399,6 @@ void printUsageInfo(){
 	cout << "Commands:\n";
 	cout << setw(INDENT) << "" << setw(20) << "add"			<< "Add library entry.\n";
 	cout << setw(INDENT) << "" << setw(20) << "add-public-key"	<< "Add public key.\n";
-	cout << setw(INDENT) << "" << setw(20) << "config"		<< "Configure global settings.\n";
 	cout << setw(INDENT) << "" << setw(20) << "create"		<< "Create library file.\n";
 	cout << setw(INDENT) << "" << setw(20) << "info"		<< "Create configuration information.\n";
 	cout << setw(INDENT) << "" << setw(20) << "ls"			<< "Display content.\n";
@@ -390,11 +408,11 @@ void printUsageInfo(){
 	cout << setw(INDENT) << "" << setw(20) << "verify"		<< "Verify file with public key.\n";
 	cout << "\n";
 	cout << "Flags:\n";
-	cout << setw(INDENT) << "" << setw(20) << "--current-library"	<< "\n";
 	cout << setw(INDENT) << "" << setw(20) << "--key"		<< "\n";
 	cout << setw(INDENT) << "" << setw(20) << "--library"		<< "\n";
 	cout << setw(INDENT) << "" << setw(20) << "--private-key"	<< "\n";
 	cout << setw(INDENT) << "" << setw(20) << "--public-key"	<< "\n";
+	cout << setw(INDENT) << "" << setw(20) << "--resource"		<< "\n";
 	cout << setw(INDENT) << "" << setw(20) << "--store"		<< "\n";
 
 	exit(1);
@@ -445,6 +463,21 @@ json readLibrary(){
 
 }
 
+void removeLibraryEntry(
+	const LibraryEntry& libraryEntry
+){
+	json library = readLibrary();
+	try{
+		json content = library.at("content");
+		content.erase(libraryEntry.getKey());
+		library["content"] = content;
+		writeLibrary(library);
+	}
+	catch(...){
+		cout << "Unable to modify library entry.\n";
+	}
+}
+
 void sign(const string& privateKeyFilename){
 	json library = readLibrary();
 	try{
@@ -461,6 +494,28 @@ void sign(const string& privateKeyFilename){
 	}
 }
 
+void updateLibraryEntry(
+	const LibraryEntry& libraryEntry
+){
+	json library = readLibrary();
+	try{
+		string key = libraryEntry.getKey();
+		string store = libraryEntry.getStore();
+		string resource = libraryEntry.getResource();
+
+		json content = library.at("content");
+		if(store.compare("") != 0)
+			content[libraryEntry.getKey()]["store"] = store;
+		if(resource.compare("") != 0)
+			content[libraryEntry.getKey()]["resource"] = resource;
+		library["content"] = content;
+		writeLibrary(library);
+	}
+	catch(...){
+		cout << "Unable to modify library entry.\n";
+	}
+}
+
 void verify(const string& publicKeyFilename){
 	json library = readLibrary();
 	try{
@@ -470,6 +525,7 @@ void verify(const string& publicKeyFilename){
 		signature.erase(signature.size()-1, 1).erase(0, 1);
 		signature = rsa.decode64(signature);
 		rsa.setPublicKey(getKey(publicKeyFilename));
+		cout << getKey(publicKeyFilename);
 		if(rsa.verifySignature(signature, content)){
 			cout << "Verification succeeded.\n";
 			exit(1);
