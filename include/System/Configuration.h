@@ -22,6 +22,9 @@ public:
 	/** Destructor. */
 	~Configuration();
 
+	/** Load configuration. */
+	void load();
+
 	/** Set current library. */
 	void setCurrentLibrary(const std::string& currentLibrary);
 
@@ -36,6 +39,9 @@ public:
 private:
 	/** Current library. */
 	std::string currentLibrary;
+
+	/** Ensure configuration file exists. */
+	void ensureConfigurationFileExists();
 };
 
 inline void Configuration::setCurrentLibrary(

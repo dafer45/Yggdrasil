@@ -1,6 +1,7 @@
 #ifndef COM_DAFER45_YGGDRASIL_IGGSTREAM
 #define COM_DAFER45_YGGDRASIL_IGGSTREAM
 
+#include "LibraryEntry.h"
 #include "YggStream.h"
 
 #include <string>
@@ -19,6 +20,9 @@ public:
 
 	/** Open. */
 	void open();
+
+	/** Open. */
+	void open(const LibraryEntry& libraryEntry);
 
 	/** Set hash type. */
 	void setHashType(HashType hashType);

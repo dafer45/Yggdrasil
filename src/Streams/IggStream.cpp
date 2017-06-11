@@ -2,6 +2,7 @@
 #include "IggStream.h"
 #include "InFileBuffer.h"
 #include "InStringBuffer.h"
+#include "SHA1.h"
 #include "URLBuffer.h"
 #include "YGGMacros.h"
 
@@ -67,8 +68,45 @@ void IggStream::open(){
 	}
 }
 
+void IggStream::open(const LibraryEntry& libraryEntry){
+	setStore(libraryEntry.getStore());
+	setResource(libraryEntry.getResource());
+	setHash(libraryEntry.getHash());
+	if(libraryEntry.getHashType().compare("") == 0){
+		setHashType(HashType::None);
+	}
+	else if(libraryEntry.getHashType().compare("sha1") == 0){
+		setHashType(HashType::SHA1);
+	}
+	else{
+		throw ReadException(
+			"IggStream::open()",
+			YGGWhere,
+			"Unknown hash type '" + libraryEntry.getHashType() + "'.",
+			""
+		);
+	}
+
+	open();
+}
+
 bool IggStream::verifyHashSHA1(){
-	SHA_CTX context;
+	SHA1 sha1;
+	string hash = sha1.calculateHash(*this);
+	if(hash.compare(getHash()) != 0){
+		throw ReadException(
+			"IggStream::verifyHash()",
+			YGGWhere,
+			"The SHA1 of the incomming data does not match the"
+			+ string(" specified hash."),
+			"Use IggStream::setHash() to set the expected hash."
+		);
+	}
+	clear();
+	seekg(0);
+
+	return false;
+/*	SHA_CTX context;
 	if(!SHA1_Init(&context)){
 		throw ReadException(
 			"IggStream::verifyHash()",
@@ -131,7 +169,7 @@ bool IggStream::verifyHashSHA1(){
 	clear();
 	seekg(0);
 
-	return true;
+	return true;*/
 }
 
 };	//End of namespace Ygg

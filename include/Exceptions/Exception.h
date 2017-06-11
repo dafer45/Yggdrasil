@@ -24,6 +24,18 @@ public:
 
 	/** Print exception to standard error output. */
 	virtual void print() const;
+
+	/** Get function. */
+	const std::string& getFunction() const;
+
+	/** Get where. */
+	const std::string& getWhere() const;
+
+	/** Get message. */
+	const std::string& getMessage() const;
+
+	/** Get hint. */
+	const std::string& getHint() const;
 private:
 	/** Function throwing the exception. */
 	std::string function;
@@ -37,6 +49,22 @@ private:
 	/** Hint for how to resolve the problem. */
 	std::string hint;
 };
+
+inline const std::string& Exception::getFunction() const{
+	return function;
+}
+
+inline const std::string& Exception::getWhere() const{
+	return where;
+}
+
+inline const std::string& Exception::getMessage() const{
+	return message;
+}
+
+inline const std::string& Exception::getHint() const{
+	return hint;
+}
 
 };	//End of namespace Ygg
 

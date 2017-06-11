@@ -59,7 +59,7 @@ void YggStream::locateResource(){
 			json content = j.at("content");
 			if(publicKey.compare("") != 0)
 				verifySignature(j.at("signature"), content);
-			json libraryEntry = content.at(resource);
+			json libraryEntry = content.at("entries").at(resource);
 			store = libraryEntry.at("store");
 			try{
 				resource = libraryEntry.at("resource");
@@ -89,8 +89,14 @@ void YggStream::locateResource(){
 				hash = libraryEntry.at("hash");
 		}
 		catch(json::exception e){
-			cout << "Error in YggStream::getStore(): " << e.what() << "\n";
-			exit(1);
+			throw ReadException(
+				"YggStream.cpp",
+				YGGWhere,
+				"Unable to dereference resource.",
+				""
+			);
+/*			cout << "Error in YggStream::getStore(): " << e.what() << "\n";
+			exit(1);*/
 		}
 	}
 }

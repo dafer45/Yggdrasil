@@ -12,6 +12,9 @@ public:
 	/** Constructor. */
 	LibraryEntry();
 
+	/** Constructor. */
+	LibraryEntry(const nlohmann::json& libraryEntry);
+
 	/** Destructor. */
 	~LibraryEntry();
 
@@ -33,6 +36,18 @@ public:
 	/** Get resource. */
 	const std::string& getResource() const;
 
+	/** Set hash. */
+	void setHash(const std::string& hash);
+
+	/** Get hash. */
+	const std::string& getHash() const;
+
+	/** Set hash type. */
+	void setHashType(const std::string& hashType);
+
+	/** Get hash type. */
+	const std::string& getHashType() const;
+
 	/** Get value string. */
 	nlohmann::json getJSONValue() const;
 private:
@@ -44,6 +59,12 @@ private:
 
 	/** Resource. */
 	std::string resource;
+
+	/** Hash. */
+	std::string hash;
+
+	/** Hash type. */
+	std::string hashType;
 };
 
 inline void LibraryEntry::setKey(const std::string& key){
@@ -70,12 +91,32 @@ inline const std::string& LibraryEntry::getResource() const{
 	return resource;
 }
 
+inline void LibraryEntry::setHash(const std::string& hash){
+	this->hash = hash;
+}
+
+inline const std::string& LibraryEntry::getHash() const{
+	return hash;
+}
+
+inline void LibraryEntry::setHashType(const std::string& hashType){
+	this->hashType = hashType;
+}
+
+inline const std::string& LibraryEntry::getHashType() const{
+	return hashType;
+}
+
 inline nlohmann::json LibraryEntry::getJSONValue() const{
 	nlohmann::json libraryEntry;
 	if(store.compare("") != 0)
 		libraryEntry["store"] = store;
 	if(resource.compare("") != 0)
 		libraryEntry["resource"] = resource;
+	if(hash.compare("") != 0)
+		libraryEntry["hash"] = hash;
+	if(hashType.compare("") != 0)
+		libraryEntry["hashType"] = hashType;
 
 	return libraryEntry;
 }
